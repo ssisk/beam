@@ -45,13 +45,13 @@ In this exercise, you will create a Source that does initial splitting but not D
 
 */
 
-public class CountingCodeLabIO {
+public class CountingCodelabIO {
 
-  public static CountingCodeLabIO.Read read() {
-    return new CountingCodeLabIO.Read(1, 100);
+  public static CountingCodelabIO.Read read() {
+    return new CountingCodelabIO.Read(1, 100);
   }
 
-  private CountingCodeLabIO() {}
+  private CountingCodelabIO() {}
 
   public static class Read extends PTransform<PBegin, PCollection<Integer>> {
     private final int start;
@@ -65,13 +65,13 @@ public class CountingCodeLabIO {
     /*
      * Allows the user to specify a range of integers to return.
      */
-    public CountingCodeLabIO.Read withRange(int start, int end) {
+    public CountingCodelabIO.Read withRange(int start, int end) {
       return new Read(start, end);
     }
 
     @Override
     public PCollection<Integer> apply(PBegin input) {
-      /*CountingCodeLabSource source = new CountingCodeLabSource(start, end);
+      /*CountingCodelabSource source = new CountingCodelabSource(start, end);
       input.apply(org.apache.beam.sdk.io.Read.from(source));*/
       return input.apply(Create.of(1, 2, 3));
     }
@@ -83,10 +83,10 @@ public class CountingCodeLabIO {
 
   }
 /*
-  public class CountingCodeLabSource extends BoundedSource {
+  public class CountingCodelabSource extends BoundedSource {
     private final int start;
     private final int end;
-    private CountingCodeLabSource(int start, int end) {
+    private CountingCodelabSource(int start, int end) {
 
     }
 

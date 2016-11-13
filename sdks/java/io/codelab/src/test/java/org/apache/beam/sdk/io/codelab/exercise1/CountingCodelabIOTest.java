@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.beam.sdk.io.codelab.exercise3.solution;
+package org.apache.beam.sdk.io.codelab.exercise1;
 
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.lessThan;
@@ -52,19 +52,19 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 /**
- * Tests of {@link CountingCodeLabIO}.
+ * Tests of {@link CountingCodelabIO}.
  */
 @RunWith(JUnit4.class)
-public class CountingCodeLabIOTest {
+public class CountingCodelabIOTest {
 
 
   @Test
   @Category(RunnableOnService.class)
   public void testSimpleRead() {
     Pipeline p = TestPipeline.create();
-    PCollection<Integer> input = p.apply(CountingCodeLabIO.read());
+    PCollection<Integer> input = p.apply(CountingCodelabIO.read());
 
-    // TODO - add tests. See addCountingAsserts from original examples.
+    // TODO - add tests 
     p.run(); 
   }
 

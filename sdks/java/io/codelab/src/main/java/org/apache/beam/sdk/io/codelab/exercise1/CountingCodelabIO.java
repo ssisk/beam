@@ -48,14 +48,14 @@ values.
 
 */
 
-public class CountingCodeLabIO {
+public class CountingCodelabIO {
 
-  public static CountingCodeLabIO.Read read() {
+  public static CountingCodelabIO.Read read() {
     // TODO - fill in 
     return null; 
   }
 
-  private CountingCodeLabIO() {}
+  private CountingCodelabIO() {}
 
   /* 
    * TODO - create a Read class to return to the user. It should implement
