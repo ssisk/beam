@@ -64,8 +64,47 @@ public class CountingCodelabIOTest {
     Pipeline p = TestPipeline.create();
     PCollection<Integer> input = p.apply(CountingCodelabIO.read());
 
-    // TODO - add tests. See addCountingAsserts from original examples.
-    p.run(); 
+    long numElements = 99l;
+    Integer start = 1;
+    Integer end = 100;
+
+    // Count == numElements
+    PAssert.that(input.apply("Count", Count.<Integer>globally()))
+            .containsInAnyOrder(numElements); // Note that the constant checked here must be a long.
+
+    // Count of Unique Elements == numElements
+    PAssert.that(input
+                    .apply(Distinct.<Integer>create())
+                    .apply("UniqueCount", Count.<Integer>globally()))
+            .containsInAnyOrder(numElements);
+
+    // Min == 0
+    PAssert.that(input.apply("Min", Min.<Integer>globally())).containsInAnyOrder(start);
+
+    // Max == numElements-1
+    PAssert.that(input.apply("Max", Max.<Integer>globally()))
+            .containsInAnyOrder(end-1);
+
+    /* This is a style that we are trying to discourage new devs from using - it relies on side inputs, and thus is
+       compatible with fewer runners.
+    PAssert.thatSingleton(input.apply("Count2", Count.<Integer>globally()))
+            .isEqualTo(100l);
+    */
+    p.run();
+  }
+
+  @Test
+  public void testWithOptions() {
+    // TODO
+  }
+
+  @Test
+  public void testSourceBasic() {
+    int start = 5;
+    int end = 10;
+    CountingCodelabIO.CountingCodelabSource source = new CountingCodelabIO.CountingCodelabSource(start, end);
+
+    // TODO
   }
 
 }

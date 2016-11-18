@@ -64,7 +64,20 @@ public class CountingCodelabIOTest {
     Pipeline p = TestPipeline.create();
     PCollection<Integer> input = p.apply(CountingCodelabIO.read());
 
-    // TODO - add tests 
+    /* TODO: write your tests here
+     *
+     * Note that rather than trying to check for each element in a range, you can check the min, max
+     * and count of unique elements in the collection, which is equivalent.
+     *
+     * When writing your tests, we suggest checking out:
+     * 1. The PAssert class, favoring the PAssert.that() syntax, which allows you to use PCollectionContentsAssert
+     * 2. Count.globally()
+     *    Note that Count returns long results, so PAsserts on return PCollections from Count.globally() will need to be
+     *    long values.
+     * 3. The Min transform
+     * 4. The Max transform
+     * 5. The Distinct transform
+     */
     p.run(); 
   }
 

@@ -22,12 +22,13 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.google.common.collect.ImmutableList;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 import java.util.NoSuchElementException;
-import org.apache.beam.sdk.coders.AvroCoder;
-import org.apache.beam.sdk.coders.Coder;
-import org.apache.beam.sdk.coders.DefaultCoder;
-import org.apache.beam.sdk.coders.VarLongCoder;
+
+import org.apache.beam.sdk.coders.*;
+import static org.apache.beam.sdk.coders.BigEndianIntegerCoder.*;
+import org.apache.beam.sdk.io.BoundedSource;
 import org.apache.beam.sdk.options.PipelineOptions;
 import org.apache.beam.sdk.transforms.Create;
 import org.apache.beam.sdk.transforms.SerializableFunction;
@@ -71,9 +72,8 @@ public class CountingCodelabIO {
 
     @Override
     public PCollection<Integer> apply(PBegin input) {
-      /*CountingCodelabSource source = new CountingCodelabSource(start, end);
-      input.apply(org.apache.beam.sdk.io.Read.from(source));*/
-      return input.apply(Create.of(1, 2, 3));
+      CountingCodelabSource source = new CountingCodelabSource(start, end);
+      return input.apply(org.apache.beam.sdk.io.Read.from(source));
     }
 
     @Override
@@ -82,23 +82,26 @@ public class CountingCodelabIO {
     }
 
   }
-/*
-  public class CountingCodelabSource extends BoundedSource {
+  public static class CountingCodelabSource extends BoundedSource<Integer> {
+    // TODO - this implementation is just a quick mock up - haven't thought through whether this meets correct
+    // Source semantics.
     private final int start;
     private final int end;
-    private CountingCodelabSource(int start, int end) {
-
+    public CountingCodelabSource(int start, int end) {
+      this.start = start;
+      this.end = end;
     }
 
     @Override
-    public List<? extends BoundedSource<T>> splitIntoBundles(
+    public List<? extends BoundedSource<Integer>> splitIntoBundles(
         long desiredBundleSizeBytes, PipelineOptions options) throws Exception {
-
+      return Collections.singletonList(this);
     }
 
     @Override
     public long getEstimatedSizeBytes(PipelineOptions options) throws Exception {
-
+      int sizeOfInteger = 4;
+      return (end - start) * sizeOfInteger;
     }
 
     @Override
@@ -106,22 +109,70 @@ public class CountingCodelabIO {
       // This Source does not produce kev/value pairs, so this is false. 
       return false;
     }
-*/
      /**
      * Returns a new {@link BoundedReader} that reads from this source.
      */
-     /*
     @Override
-    public BoundedReader<T> createReader(PipelineOptions options) throws IOException {
-
+    public BoundedReader<Integer> createReader(PipelineOptions options) throws IOException {
+      return new CountingCodelabReader(this, start, end);
     }
 
 
     @Override
-    public void validate(PBegin input) {
-      
+    public void validate() {
+      // TODO
+    }
+
+    @Override
+    public Coder getDefaultOutputCoder() {
+      // TODO - should we use a better coder?
+      return BigEndianIntegerCoder.of();
+    }
+
+    private static class CountingCodelabReader extends BoundedReader<Integer> {
+      // TODO - this implementation is just a quick mock up - haven't thought through whether this meets correct
+      // Reader semantics.
+      private int current;
+      private int start;
+      private int end;
+      private CountingCodelabSource source;
+
+      public CountingCodelabReader(CountingCodelabSource source, int start, int end) {
+        this.start = start;
+        this.end = end;
+        this.source = source;
+      }
+
+      @Override
+      public boolean start() throws IOException {
+        current = start;
+        return true;
+      }
+
+      @Override
+      public boolean advance() throws IOException {
+        current++;
+        return current < end;
+      }
+
+      @Override
+      public Integer getCurrent() throws NoSuchElementException {
+        if (current < end) {
+            return current;
+        }
+        return null;
+      }
+
+      @Override
+      public void close() throws IOException {
+
+      }
+
+      @Override
+      public BoundedSource<Integer> getCurrentSource() {
+        return source;
+      }
     }
   }
-    */
 
 }
