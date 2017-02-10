@@ -29,13 +29,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Manipulates test data used by the JdbcIO tests.
+ * Manipulates test data used by the {@link org.apache.beam.sdk.io.jdbc.JdbcIO} tests.
  *
  * <p>This is independent from the tests so that for read tests it can be run separately after data
  * store creation rather than every time (which can be more fragile.)
  */
 public class JdbcTestDataSet {
   private static final Logger LOG = LoggerFactory.getLogger(JdbcTestDataSet.class);
+  public static final String[] SCIENTISTS = {"Einstein", "Darwin", "Copernicus", "Pasteur", "Curie",
+      "Faraday", "McClintock", "Herschel", "Hopper", "Lovelace"};
   /**
    * Use this to create the read tables before IT read tests.
    *
@@ -72,7 +74,7 @@ public class JdbcTestDataSet {
     return dataSource;
   }
 
-  public static final String READ_TABLE_NAME = "BEAMTESTREAD";
+  public static final String READ_TABLE_NAME = "BEAM_TEST_READ";
 
   public static void createReadDataTable(DataSource dataSource) throws SQLException {
     createDataTable(dataSource, READ_TABLE_NAME);
@@ -95,24 +97,22 @@ public class JdbcTestDataSet {
             String.format("create table %s (id INT, name VARCHAR(500))", tableName));
       }
 
-      String[] scientists = {"Einstein", "Darwin", "Copernicus", "Pasteur", "Curie", "Faraday",
-          "Newton", "Bohr", "Galilei", "Maxwell"};
       connection.setAutoCommit(false);
       try (PreparedStatement preparedStatement =
                connection.prepareStatement(
                    String.format("insert into %s values (?,?)", tableName))) {
         for (int i = 0; i < 1000; i++) {
-          int index = i % scientists.length;
+          int index = i % SCIENTISTS.length;
           preparedStatement.clearParameters();
           preparedStatement.setInt(1, i);
-          preparedStatement.setString(2, scientists[index]);
+          preparedStatement.setString(2, SCIENTISTS[index]);
           preparedStatement.executeUpdate();
         }
       }
       connection.commit();
     }
 
-    LOG.info("Created table " + tableName);
+    LOG.info("Created table {}", tableName);
   }
 
   public static void cleanUpDataTable(DataSource dataSource, String tableName)
