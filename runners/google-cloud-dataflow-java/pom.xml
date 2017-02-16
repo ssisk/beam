@@ -69,7 +69,7 @@
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration>
           <systemPropertyVariables>
-            <beamTestPipelineOptions />
+            <!-- <beamTestPipelineOptions /> -->
             <beamUseDummyRunner>true</beamUseDummyRunner>
           </systemPropertyVariables>
         </configuration>
@@ -91,6 +91,19 @@
           </execution>
         </executions>
       </plugin>
+
+
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-failsafe-plugin</artifactId>
+            <configuration>
+              <systemPropertyVariables>
+                <beamTestPipelineOptions>${runnerIOPipelineOptions}</beamTestPipelineOptions>
+              </systemPropertyVariables>
+              <dependenciesToScan>org.apache.beam:beam-sdks-java-io-jdbc</dependenciesToScan>
+            </configuration>
+          </plugin>
+
 
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -163,13 +176,77 @@
         <groupId>org.jacoco</groupId>
         <artifactId>jacoco-maven-plugin</artifactId>
       </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <version>1.1</version>
+        <executions>
+          <execution>
+            <phase>validate</phase>
+            <goals>
+              <goal>run</goal>
+            </goals>
+            <configuration>
+              <tasks>
+                <echo>Displaying value of 'beamTestPipelineOptions' property</echo>
+                <echo>[beamTestPipelineOptions] ${beamTestPipelineOptions}</echo>
+              </tasks>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <version>1.1</version>
+        <executions>
+          <execution>
+            <phase>validate</phase>
+            <goals>
+              <goal>run</goal>
+            </goals>
+            <configuration>
+              <tasks>
+                <echo>Displaying value of 'runnerIOPipelineOptions' property</echo>
+                <echo>[runnerIOPipelineOptions] ${runnerIOPipelineOptions}</echo>
+              </tasks>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
     </plugins>
+
+
   </build>
 
   <dependencies>
     <dependency>
       <groupId>org.apache.beam</groupId>
       <artifactId>beam-sdks-java-core</artifactId>
+    </dependency>
+
+
+  <dependency>
+    <groupId>org.apache.beam</groupId>
+    <artifactId>beam-sdks-java-io-jdbc</artifactId>
+    <scope>test</scope>
+    <type>test-jar</type>
+    <version>${project.version}</version>
+  </dependency>
+
+    <dependency>
+      <groupId>org.apache.beam</groupId>
+      <artifactId>beam-sdks-java-io-jdbc</artifactId>
+      <scope>test</scope>
+      <version>${project.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.postgresql</groupId>
+      <artifactId>postgresql</artifactId>
+      <version>9.4.1212.jre7</version>
+      <scope>test</scope>
     </dependency>
 
     <dependency>

@@ -44,4 +44,13 @@
     <module>mqtt</module>
   </modules>
 
+  <build>
+    <plugins>
+
+
+
+    </plugins>
+  </build>
+
+
 </project>

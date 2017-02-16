@@ -30,6 +30,26 @@
   <name>Apache Beam :: SDKs :: Java :: IO :: JDBC</name>
   <description>IO to read and write on JDBC datasource.</description>
 
+  <properties>
+    <sisktestproperty>This is a test property</sisktestproperty>
+  </properties>
+
+
+  <profiles>
+
+    <!-- Include the Google Cloud Dataflow runner -P dataflow-runner -->
+    <!-- <profile>
+      <id>dataflow-runner</id>
+      <dependencies>
+        <dependency>
+          <groupId>org.apache.beam</groupId>
+          <artifactId>beam-runners-google-cloud-dataflow-java</artifactId>
+          <scope>runtime</scope>
+        </dependency>
+      </dependencies>
+    </profile> -->
+  </profiles>
+
   <build>
     <plugins>
       <plugin>
@@ -44,6 +64,27 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-jar-plugin</artifactId>
       </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <version>1.1</version>
+        <executions>
+          <execution>
+            <phase>validate</phase>
+            <goals>
+              <goal>run</goal>
+            </goals>
+            <configuration>
+              <tasks>
+                <echo>Displaying value of 'beamTestPipelineOptions' property</echo>
+                <echo>[beamTestPipelineOptions] ${beamTestPipelineOptions}</echo>
+              </tasks>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+
     </plugins>
   </build>
 
