@@ -120,7 +120,7 @@ class Count(object):
     def expand(self, pcoll):
       paired_with_void_type = KV[pcoll.element_type, Any]
       return (pcoll
-              | (core.Map('%s:PairWithVoid' % self.label, lambda x: (x, None))
+              | ('%s:PairWithVoid' % self.label >> core.Map(lambda x: (x, None))
                  .with_output_types(paired_with_void_type))
               | core.CombinePerKey(CountCombineFn()))
 
@@ -476,7 +476,7 @@ class ToList(ptransform.PTransform):
     super(ToList, self).__init__(label)
 
   def expand(self, pcoll):
-    return pcoll | core.CombineGlobally(self.label, ToListCombineFn())
+    return pcoll | self.label >> core.CombineGlobally(ToListCombineFn())
 
 
 @with_input_types(T)
@@ -510,7 +510,7 @@ class ToDict(ptransform.PTransform):
     super(ToDict, self).__init__(label)
 
   def expand(self, pcoll):
-    return pcoll | core.CombineGlobally(self.label, ToDictCombineFn())
+    return pcoll | self.label >> core.CombineGlobally(ToDictCombineFn())
 
 
 @with_input_types(Tuple[K, V])

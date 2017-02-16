@@ -87,8 +87,8 @@ class CoGroupByKey(PTransform):
       to provide pipeline information, and should be considered mandatory.
   """
 
-  def __init__(self, label=None, **kwargs):
-    super(CoGroupByKey, self).__init__(label)
+  def __init__(self, **kwargs):
+    super(CoGroupByKey, self).__init__()
     self.pipeline = kwargs.pop('pipeline', None)
     if kwargs:
       raise ValueError('Unexpected keyword arguments: %s' % kwargs.keys())
@@ -138,7 +138,7 @@ class CoGroupByKey(PTransform):
       if self.pipeline:
         assert pcoll.pipeline == self.pipeline
 
-    return ([pcoll | Map('pair_with_%s' % tag, _pair_tag_with_value, tag)
+    return ([pcoll | 'pair_with_%s' % tag >> Map(_pair_tag_with_value, tag)
              for tag, pcoll in pcolls]
             | Flatten(pipeline=self.pipeline)
             | GroupByKey()
@@ -147,17 +147,17 @@ class CoGroupByKey(PTransform):
 
 def Keys(label='Keys'):  # pylint: disable=invalid-name
   """Produces a PCollection of first elements of 2-tuples in a PCollection."""
-  return Map(label, lambda (k, v): k)
+  return label >> Map(lambda (k, v): k)
 
 
 def Values(label='Values'):  # pylint: disable=invalid-name
   """Produces a PCollection of second elements of 2-tuples in a PCollection."""
-  return Map(label, lambda (k, v): v)
+  return label >> Map(lambda (k, v): v)
 
 
 def KvSwap(label='KvSwap'):  # pylint: disable=invalid-name
   """Produces a PCollection reversing 2-tuples in a PCollection."""
-  return Map(label, lambda (k, v): (v, k))
+  return label >> Map(lambda (k, v): (v, k))
 
 
 @ptransform_fn
