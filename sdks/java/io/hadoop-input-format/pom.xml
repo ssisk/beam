@@ -88,6 +88,7 @@
       <version>${findbugs.jsr305.version}</version>
     </dependency>
 
+
 	<!-- compile dependencies -->
     <dependency>
       <groupId>com.google.auto.value</groupId>
@@ -149,7 +150,7 @@
     <dependency>
       <groupId>org.elasticsearch.client</groupId>
       <artifactId>transport</artifactId>
-      <version>5.0.0-beta1</version>
+      <version>${elasticsearch.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
