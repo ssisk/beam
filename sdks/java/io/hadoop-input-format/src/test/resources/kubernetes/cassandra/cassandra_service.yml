@@ -23,6 +23,7 @@ metadata:
 spec:
   ports:
     - port: 9042
+      name: cql
   selector:
     app: cassandra1
   type: LoadBalancer
