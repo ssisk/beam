@@ -21,7 +21,7 @@ metadata:
     name: cassandra1
   name: cassandra1
 spec:
-  replicas: 1
+  replicas: 3
   selector:
     name: cassandra1
   template:
@@ -33,7 +33,8 @@ spec:
         - image: cassandra
           name: cassandra1
           env:
-            # Feel free to change the following:
+            - name: PEER_DISCOVERY_SERVICE
+              value: cassandra-peers
             - name: CASSANDRA_CLUSTER_NAME
               value: Cassandra
             - name: CASSANDRA_DC
