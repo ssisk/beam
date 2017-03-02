@@ -18,20 +18,20 @@ apiVersion: v1
 kind: ReplicationController
 metadata:
   labels:
-    name: cassandra1
-  name: cassandra1
+    name: cassandra
+  name: cassandra
 spec:
-  replicas: 3
+  replicas: 1 
   selector:
-    name: cassandra1
+    name: cassandra
   template:
     metadata:
       labels:
-        name: cassandra1
+        name: cassandra
     spec:
       containers:
         - image: cassandra
-          name: cassandra1
+          name: cassandra
           env:
             - name: PEER_DISCOVERY_SERVICE
               value: cassandra-peers
