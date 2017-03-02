@@ -17,17 +17,17 @@
 #!/bin/sh
 
 # Identify the pod
-cassandra_pods="kubectl get pods -l name=cassandra1"
-running_seed="$(kubectl get pods -o json -l name=cassandra1 -o jsonpath='{.items[0].metadata.name}')"
+cassandra_pods="kubectl get pods -l name=cassandra"
+running_seed="$(kubectl get pods -o json -l name=cassandra -o jsonpath='{.items[0].metadata.name}')"
 echo "$running_seed"
-cassandra_svc="kubectl get svc cassandra1"
+cassandra_svc="kubectl get svc cassandra"
 echo
 
 # After starting the service, it takes couple of minutes to generate the external IP for the service. Hence, wait for sometime.
 sleep 2m
 
 # Identify external IP of the pod
-external_ip="$(kubectl get svc cassandra1 -o jsonpath='{.status.loadBalancer.ingress[0].ip}')"
+external_ip="$(kubectl get svc cassandra -o jsonpath='{.status.loadBalancer.ingress[0].ip}')"
 echo "External IP - $external_ip"
 echo
 
