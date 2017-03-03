@@ -272,9 +272,9 @@ public class HadoopInputFormatIO {
   @AutoValue
   public abstract static class Read<K, V> extends PTransform<PBegin, PCollection<KV<K, V>>> {
 
-    static TypeDescriptor<?> inputFormatClass;
-    static TypeDescriptor<?> inputFormatKeyClass;
-    static TypeDescriptor<?> inputFormatValueClass;
+    private TypeDescriptor<?> inputFormatClass;
+    private TypeDescriptor<?> inputFormatKeyClass;
+    private TypeDescriptor<?> inputFormatValueClass;
 
     // Returns the Hadoop Configuration which contains specification of source.
     @Nullable
@@ -428,9 +428,8 @@ public class HadoopInputFormatIO {
         if (Writable.class.isAssignableFrom(classType)) {
           return (Coder<T>) WritableCoder.of(classType);
         }
-        throw new IllegalStateException(
-            String.format(HadoopInputFormatIOConstants.CANNOT_FIND_CODER_ERROR_MSG, typeDesc)
-                + e.getMessage(),
+        throw new IllegalStateException(String.format(
+            HadoopInputFormatIOConstants.CANNOT_FIND_CODER_ERROR_MSG, typeDesc) + e.getMessage(),
             e);
       }
     }
@@ -443,7 +442,7 @@ public class HadoopInputFormatIO {
             .getHadoopConfiguration().iterator();
         while (configProperties.hasNext()) {
           Entry<String, String> property = configProperties.next();
-          builder.add(DisplayData.item(property.getKey(), property.getValue())
+          builder.addIfNotNull(DisplayData.item(property.getKey(), property.getValue())
               .withLabel(property.getKey()));
         }
       }
@@ -460,8 +459,8 @@ public class HadoopInputFormatIO {
     private final SerializableConfiguration conf;
     private final Coder<K> keyCoder;
     private final Coder<V> valueCoder;
-    private final SimpleFunction<?, K> keyTranslationFunction;
-    private final SimpleFunction<?, V> valueTranslationFunction;
+    @Nullable private final SimpleFunction<?, K> keyTranslationFunction;
+    @Nullable private final SimpleFunction<?, V> valueTranslationFunction;
     private final SerializableSplit inputSplit;
     private transient List<SerializableSplit> inputSplits;
     private long boundedSourceEstimatedSize = 0;
@@ -472,8 +471,8 @@ public class HadoopInputFormatIO {
         SerializableConfiguration conf,
         Coder<K> keyCoder,
         Coder<V> valueCoder,
-        SimpleFunction<?, K> keyTranslationFunction,
-        SimpleFunction<?, V> valueTranslationFunction) {
+        @Nullable SimpleFunction<?, K> keyTranslationFunction,
+        @Nullable SimpleFunction<?, V> valueTranslationFunction) {
       this(conf,
           keyCoder,
           valueCoder,
@@ -486,8 +485,8 @@ public class HadoopInputFormatIO {
         SerializableConfiguration conf,
         Coder<K> keyCoder,
         Coder<V> valueCoder,
-        SimpleFunction<?, K> keyTranslationFunction,
-        SimpleFunction<?, V> valueTranslationFunction,
+        @Nullable SimpleFunction<?, K> keyTranslationFunction,
+        @Nullable SimpleFunction<?, V> valueTranslationFunction,
         SerializableSplit inputSplit) {
       this.conf = conf;
       this.inputSplit = inputSplit;
@@ -798,7 +797,7 @@ public class HadoopInputFormatIO {
       private final SerializableSplit split;
       private RecordReader<T1, T2> recordReader;
       private volatile boolean doneReading = false;
-      private long recordsReturned = 0L;
+      private volatile long recordsReturned = 0L;
       // Tracks the progress of the RecordReader.
       private AtomicDouble progressValue = new AtomicDouble();
       private transient InputFormat<T1, T2> inputFormatObj;
@@ -951,10 +950,10 @@ public class HadoopInputFormatIO {
       @Override
       public Double getFractionConsumed() {
         if (doneReading) {
-          return 1.0;
+          progressValue.set(1.0);
         }
         if (recordReader == null || recordsReturned == 0) {
-          return 0.0;
+          progressValue.set(0.0);
         }
         return progressValue.doubleValue();
       }
