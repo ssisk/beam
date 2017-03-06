@@ -468,9 +468,10 @@ public class HadoopInputFormatIO {
     }
 
     /**
-     * This is a helper function to compute splits. This method will also calculate size of the data
-     * being read. Note: This method is executed exactly once, the splits are retrieved and cached
-     * for further use by splitIntoBundles() and getEstimatesSizeBytes().
+     * This is a helper function to compute splits. This method will also calculate size of the
+     * data being read. Note: This method is executed exactly once and the splits are retrieved
+     * and cached in this. These splits are further used by splitIntoBundles() and
+     * getEstimatedSizeBytes().
      */
     @VisibleForTesting
     void computeSplitsIfNecessary() throws IOException, InterruptedException {
@@ -576,17 +577,15 @@ public class HadoopInputFormatIO {
         /*
          * Validates key class with InputFormat's parameterized type.
          */
-        return validateClassesEquality(
-            inputClass,
-            conf.getHadoopConfiguration().getClass(HadoopInputFormatIOConstants.KEY_CLASS,
-                Object.class));
+        return (conf.getHadoopConfiguration().getClass(HadoopInputFormatIOConstants.KEY_CLASS,
+            Object.class)).isAssignableFrom(inputClass);
       } catch (ClassNotFoundException e) {
         /*
          * Given inputFormatGenericClassName is a type parameter i.e. T, K, V, etc. In such cases
          * class validation for user provided input key will not work correctly. Therefore the need
          * to validate key class by encoding and decoding key object with the given coder.
          */
-        return validateClassUsingCoder(keyObject, coder);
+        return checkEncodingAndDecoding((Coder<T>) coder, (T) keyObject);
       }
     }
 
@@ -604,33 +603,16 @@ public class HadoopInputFormatIO {
         /*
          * Validates value class with InputFormat's parameterized type.
          */
-        return validateClassesEquality(
-            inputClass,
-            conf.getHadoopConfiguration().getClass(HadoopInputFormatIOConstants.VALUE_CLASS,
-                Object.class));
-
+        return (conf.getHadoopConfiguration().getClass(HadoopInputFormatIOConstants.VALUE_CLASS,
+            Object.class)).isAssignableFrom(inputClass);
       } catch (Exception e) {
         /*
          * Given inputFormatGenericClassName is a type parameter i.e. T, K, V, etc. In such cases
          * class validation for user provided input value will not work correctly. Therefore the
          * need to validate value class by encoding and decoding value object with the given coder.
          */
-        return validateClassUsingCoder(valueObject, coder);
+        return checkEncodingAndDecoding((Coder<T>) coder, (T) valueObject);
       }
-    }
-
-    /**
-     * Validates if key/value object encodes and decodes successfully using the given coder.
-     */
-    private <T> boolean validateClassUsingCoder(Object entity, Coder<T> coder) {
-      return checkEncodingAndDecoding(coder, (T) entity);
-    }
-
-    /**
-     * Validates if a given class is type of a given expectedClass.
-     */
-    private boolean validateClassesEquality(Class<?> expectedClass, Class<?> actualClass) {
-      return actualClass.isAssignableFrom(expectedClass);
     }
 
     /**
