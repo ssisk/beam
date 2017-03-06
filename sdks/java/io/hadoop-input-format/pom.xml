@@ -196,6 +196,7 @@
       <groupId>io.netty</groupId>
       <artifactId>netty-transport-native-epoll</artifactId>
       <version>4.0.42.Final</version>
+      <scope>test</scope>
 	</dependency>
     <dependency>
       <groupId>org.elasticsearch</groupId>

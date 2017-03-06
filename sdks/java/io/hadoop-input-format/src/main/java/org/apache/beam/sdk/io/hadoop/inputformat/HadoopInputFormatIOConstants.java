@@ -18,26 +18,6 @@ package org.apache.beam.sdk.io.hadoop.inputformat;
  * All Constants are maintained.
  */
 public class HadoopInputFormatIOConstants {
-  public static final String MISSING_CONFIGURATION_SOURCE_ERROR_MSG =
-      "Configuration of HadoopInputFormatSource missing. Please set the configuration.";
-  public static final String MISSING_KEY_CODER_SOURCE_ERROR_MSG =
-      "KeyCoder cannot not be null in HadoopInputFormatSource.";
-  public static final String MISSING_VALUE_CODER_SOURCE_ERROR_MSG =
-      "ValueCoder should not be null in HadoopInputFormatSource.";
-  public static final String NULL_CONFIGURATION_ERROR_MSG = "Configuration cannot be null.";
-  public static final String NULL_KEY_TRANSLATIONFUNC_ERROR_MSG =
-      "Simple function for key translation cannot be null.";
-  public static final String NULL_VALUE_TRANSLATIONFUNC_ERROR_MSG =
-      "Simple function for value translation cannot be null.";
-  public static final String MISSING_CONFIGURATION_ERROR_MSG =
-      "Need to set the configuration of a HadoopInputFormatIO Read "
-      + "using method Read.withConfiguration().";
-  public static final String MISSING_INPUTFORMAT_ERROR_MSG = "Hadoop InputFormat class property "
-      + "\"mapreduce.job.inputformat.class\" is not set in configuration.";
-  public static final String MISSING_INPUTFORMAT_KEY_CLASS_ERROR_MSG =
-      "Configuration property \"key.class\" is not set.";
-  public static final String MISSING_INPUTFORMAT_VALUE_CLASS_ERROR_MSG =
-      "Configuration property \"value.class\" is not set.";
   public static final String WRONG_INPUTFORMAT_KEY_CLASS_ERROR_MSG =
       "Wrong InputFormat key class in configuration : Expected key.class is %s but was %s.";
   public static final String WRONG_INPUTFORMAT_VALUE_CLASS_ERROR_MSG =
@@ -66,5 +46,4 @@ public class HadoopInputFormatIOConstants {
   public static final String INPUTFORMAT_CLASSNAME = "mapreduce.job.inputformat.class";
   public static final String KEY_CLASS = "key.class";
   public static final String VALUE_CLASS = "value.class";
-
 }
