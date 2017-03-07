@@ -17,7 +17,7 @@
     under the License.
 -->
 
-# HadoopInputFormatIO
+# Hadoop InputFormat IO
 
 A HadoopInputFormatIO is a Transform for reading data from any source which
 implements Hadoop InputFormat. For example- Cassandra, Elasticsearch, HBase, Redis, Postgres, etc.
@@ -58,7 +58,7 @@ new SimpleFunction<InputFormatValueClass, MyValueClass>() {
 };
 ```
 
-### Reading using HadoopInputFormatIO
+### Reading using Hadoop InputFormat IO
 Pipeline p = ...; // Create pipeline.
 // Read data only with Hadoop configuration.
 
@@ -98,7 +98,7 @@ p.apply("read",
   .withValueTranslation(myOutputValueType);
 ```
 
-### Read data from Cassandra using HadoopInputFormatIO transform
+### Read data from Cassandra using Hadoop InputFormat IO transform
 
 To read data from Cassandra, org.apache.cassandra.hadoop.cql3.CqlInputFormat
 CqlInputFormat can be used which needs following properties to be set.
@@ -112,15 +112,9 @@ cassandraConf.set("cassandra.input.thrift.address", CassandraHostIp);
 cassandraConf.set("cassandra.input.partitioner.class", "Murmur3Partitioner");
 cassandraConf.set("cassandra.input.keyspace", "myKeySpace");
 cassandraConf.set("cassandra.input.columnfamily", "myColumnFamily");
-<<<<<<< Updated upstream
 cassandraConf.setClass("key.class", java.lang.Long Long.class, Object.class);
 cassandraConf.setClass("value.class", com.datastax.driver.core.Row Row.class, Object.class);
 cassandraConf.setClass("mapreduce.job.inputformat.class", org.apache.cassandra.hadoop.cql3.CqlInputFormat CqlInputFormat.class, InputFormat.class);
-=======
-cassandraConf.setClass("key.class", java.lang.Long Long.class, Object.class);
-cassandraConf.setClass("value.class", com.datastax.driver.core.Row Row.class, Object.class);
-cassandraConf.setClass("mapreduce.job.inputformat.class", org.apache.cassandra.hadoop.cql3.CqlInputFormat CqlInputFormat.class, InputFormat.class);
->>>>>>> Stashed changes
 ```
 
 Call Read transform as follows:
