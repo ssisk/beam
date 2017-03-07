@@ -98,7 +98,9 @@ p.apply("read",
   .withValueTranslation(myOutputValueType);
 ```
 
-### Read data from Cassandra using Hadoop InputFormat IO transform
+# Examples for specific InputFormats
+
+### Cassandra - CqlInputFormat
 
 To read data from Cassandra, org.apache.cassandra.hadoop.cql3.CqlInputFormat
 CqlInputFormat can be used which needs following properties to be set.
@@ -138,7 +140,7 @@ SimpleFunction<Row, String> cassandraOutputValueType = SimpleFunction<Row, Strin
 };
 ```
  
-### Read data from Elasticsearch using HadoopInputFormatIO transform
+### Elasticsearch - EsInputFormat
  
 To read data from Elasticsearch, EsInputFormat can be used which needs following properties to be set.
  
