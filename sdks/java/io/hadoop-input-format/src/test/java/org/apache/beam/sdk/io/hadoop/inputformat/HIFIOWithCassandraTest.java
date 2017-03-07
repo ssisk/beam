@@ -142,11 +142,10 @@ public class HIFIOWithCassandraTest implements Serializable {
     conf.set(CASSANDRA_PARTITIONER_CLASS_PROPERTY, CASSANDRA_PARTITIONER_CLASS_VALUE);
     conf.set(CASSANDRA_KEYSPACE_PROPERTY, CASSANDRA_KEYSPACE);
     conf.set(CASSANDRA_COLUMNFAMILY_PROPERTY, CASSANDRA_TABLE);
-    conf.setClass(HadoopInputFormatIOConstants.INPUTFORMAT_CLASSNAME,
+    conf.setClass("mapreduce.job.inputformat.class",
         org.apache.cassandra.hadoop.cql3.CqlInputFormat.class, InputFormat.class);
-    conf.setClass(HadoopInputFormatIOConstants.KEY_CLASS, java.lang.Long.class, Object.class);
-    conf.setClass(HadoopInputFormatIOConstants.VALUE_CLASS, com.datastax.driver.core.Row.class,
-        Object.class);
+    conf.setClass("key.class", java.lang.Long.class, Object.class);
+    conf.setClass("value.class", com.datastax.driver.core.Row.class, Object.class);
     return conf;
   }
 

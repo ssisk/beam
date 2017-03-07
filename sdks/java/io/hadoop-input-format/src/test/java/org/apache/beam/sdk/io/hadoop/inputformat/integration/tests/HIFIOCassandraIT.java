@@ -23,7 +23,6 @@ import java.io.Serializable;
 
 import org.apache.beam.sdk.Pipeline;
 import org.apache.beam.sdk.io.hadoop.inputformat.HadoopInputFormatIO;
-import org.apache.beam.sdk.io.hadoop.inputformat.HadoopInputFormatIOConstants;
 import org.apache.beam.sdk.io.hadoop.inputformat.custom.options.HIFTestOptions;
 import org.apache.beam.sdk.io.hadoop.inputformat.hashing.HashingFn;
 import org.apache.beam.sdk.options.PipelineOptionsFactory;
@@ -170,11 +169,10 @@ public class HIFIOCassandraIT implements Serializable {
     conf.set(PASSWORD, options.getPassword());
     conf.set(INPUT_KEYSPACE_USERNAME_CONFIG, options.getUserName());
     conf.set(INPUT_KEYSPACE_PASSWD_CONFIG, options.getPassword());
-    conf.setClass(HadoopInputFormatIOConstants.INPUTFORMAT_CLASSNAME,
+    conf.setClass("mapreduce.job.inputformat.class",
         org.apache.cassandra.hadoop.cql3.CqlInputFormat.class, InputFormat.class);
-    conf.setClass(HadoopInputFormatIOConstants.KEY_CLASS, java.lang.Long.class, Object.class);
-    conf.setClass(HadoopInputFormatIOConstants.VALUE_CLASS, com.datastax.driver.core.Row.class,
-        Object.class);
+    conf.setClass("key.class", java.lang.Long.class, Object.class);
+    conf.setClass("value.class", com.datastax.driver.core.Row.class, Object.class);
     return conf;
   }
 }

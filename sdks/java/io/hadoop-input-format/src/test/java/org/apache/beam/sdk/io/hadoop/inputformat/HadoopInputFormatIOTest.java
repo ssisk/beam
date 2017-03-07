@@ -159,7 +159,8 @@ public class HadoopInputFormatIOTest {
     assertEquals(myKeyTranslate, read.getKeyTranslationFunction());
     assertEquals(null, read.getValueTranslationFunction());
     assertEquals(myKeyTranslate.getOutputTypeDescriptor(), read.getKeyClass());
-    assertEquals(diffConf.getHadoopConfiguration().getClass("value.class", Object.class),       read.getValueClass().getRawType());
+    assertEquals(diffConf.getHadoopConfiguration().getClass("value.class", Object.class), read
+        .getValueClass().getRawType());
   }
 
   /**
@@ -423,9 +424,12 @@ public class HadoopInputFormatIOTest {
     HadoopInputFormatIO.Read<Text, String> read = HadoopInputFormatIO.<Text, String>read()
         .withConfiguration(wrongConf.getHadoopConfiguration());
     String expectedMessage =
-        String.format("java.lang.IllegalArgumentException: " + "Wrong InputFormat key class in "
-            + "configuration : Expected key.class is %s but was %s.", Text.class.getName(), 
-            MapWritable.class.getName());
+        String
+            .format(
+                "java.lang.IllegalArgumentException: "
+                    + "Wrong InputFormat key class in configuration : "
+                    + "Expected key.class is %s but was %s.",
+                Text.class.getName(), MapWritable.class.getName());
     thrown.expect(PipelineExecutionException.class);
     thrown.expectMessage(expectedMessage);
     p.apply("ReadTest", read);

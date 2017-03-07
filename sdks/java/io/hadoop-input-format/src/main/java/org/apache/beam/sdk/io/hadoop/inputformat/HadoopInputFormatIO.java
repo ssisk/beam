@@ -41,7 +41,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
-import java.util.NoSuchElementException;
 import java.util.Set;
 
 import javax.annotation.Nullable;
@@ -322,9 +321,9 @@ public class HadoopInputFormatIO {
           "Key translation's input type is not same as hadoop InputFormat : %s key class : %s");
       // Validate that the value translation input type must be same as value class of InputFormat.
       validateTranslationFunction(getinputFormatValueClass(), getValueTranslationFunction(),
-          "Value translation's input type is not same as hadoop InputFormat :  %s value class : %s");
+          "Value translation's input type is not same as hadoop InputFormat :  "
+              + "%s value class : %s");
     }
-
 
     /**
      * Validates translation function given for key/value translation.
@@ -390,7 +389,6 @@ public class HadoopInputFormatIO {
     private long boundedSourceEstimatedSize = 0;
     private transient InputFormat<?, ?> inputFormatObj;
     private transient TaskAttemptContext taskAttemptContext;
-       
     HadoopInputFormatBoundedSource(
         SerializableConfiguration conf,
         Coder<K> keyCoder,
@@ -489,10 +487,10 @@ public class HadoopInputFormatIO {
       inputSplits = new ArrayList<SerializableSplit>();
       for (InputSplit inputSplit : splits) {
         if (inputSplit == null) {
-          throw new IOException(
-              "Error in computing splits, split is null in InputSplits list populated by getSplits() : ");
+          throw new IOException("Error in computing splits, split is null in InputSplits list "
+              + "populated by getSplits() : ");
         }
-    boundedSourceEstimatedSize += inputSplit.getLength();
+        boundedSourceEstimatedSize += inputSplit.getLength();
         inputSplits.add(new SerializableSplit(inputSplit));
       }
       validateUserInputForKeyAndValue();
