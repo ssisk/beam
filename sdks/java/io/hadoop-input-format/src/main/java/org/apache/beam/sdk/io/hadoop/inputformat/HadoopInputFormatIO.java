@@ -212,8 +212,8 @@ public class HadoopInputFormatIO {
       abstract Builder<K, V> setConfiguration(SerializableConfiguration configuration);
       abstract Builder<K, V> setKeyTranslationFunction(SimpleFunction<?, K> function);
       abstract Builder<K, V> setValueTranslationFunction(SimpleFunction<?, V> function);
-      abstract Builder<K, V> setKeyClass(TypeDescriptor<K> keyClass);
-      abstract Builder<K, V> setValueClass(TypeDescriptor<V> valueClass);
+      abstract Builder<K, V> setKeyTypeDescriptor(TypeDescriptor<K> keyTypeDescriptor);
+      abstract Builder<K, V> setValueTypeDescriptor(TypeDescriptor<V> valueTypeDescriptor);
       abstract Builder<K, V> setInputFormatClass(TypeDescriptor<?> inputFormatClass);
       abstract Builder<K, V> setInputFormatKeyClass(TypeDescriptor<?> inputFormatKeyClass);
       abstract Builder<K, V> setInputFormatValueClass(TypeDescriptor<?> inputFormatValueClass);
@@ -244,14 +244,14 @@ public class HadoopInputFormatIO {
        * yet.
        */
       if (getKeyTranslationFunction() == null) {
-        builder.setKeyClass((TypeDescriptor<K>) inputFormatKeyClass);
+        builder.setKeyTypeDescriptor((TypeDescriptor<K>) inputFormatKeyClass);
       }
       /*
        * Sets the output value class to InputFormat value class if withValueTranslation() is not
        * called yet.
        */
       if (getValueTranslationFunction() == null) {
-        builder.setValueClass((TypeDescriptor<V>) inputFormatValueClass);
+        builder.setValueTypeDescriptor((TypeDescriptor<V>) inputFormatValueClass);
       }
       return builder.build();
     }
@@ -266,7 +266,7 @@ public class HadoopInputFormatIO {
       checkNotNull(function, "function");
       // Sets key class to key translation function's output class type.
       return toBuilder().setKeyTranslationFunction(function)
-          .setKeyClass((TypeDescriptor<K>) function.getOutputTypeDescriptor()).build();
+          .setKeyTypeDescriptor((TypeDescriptor<K>) function.getOutputTypeDescriptor()).build();
     }
 
     /**
@@ -279,7 +279,7 @@ public class HadoopInputFormatIO {
       checkNotNull(function, "function");
       // Sets value class to value translation function's output class type.
       return toBuilder().setValueTranslationFunction(function)
-          .setValueClass((TypeDescriptor<V>) function.getOutputTypeDescriptor()).build();
+          .setValueTypeDescriptor((TypeDescriptor<V>) function.getOutputTypeDescriptor()).build();
     }
 
     @Override
@@ -537,11 +537,11 @@ public class HadoopInputFormatIO {
       ParameterizedType genericClassType = determineGenericType();
       RecordReader<?, ?> reader = fetchFirstRecordReader();
       boolean isCorrectKeyClassSet =
-          validateKeyClass(genericClassType.getActualTypeArguments()[0].getTypeName(), keyCoder,
-              reader.getCurrentKey());
+          validateClass(genericClassType.getActualTypeArguments()[0].getTypeName(), keyCoder,
+              reader.getCurrentKey(), "key.class");
       boolean isCorrectValueClassSet =
-          validateValueClass(genericClassType.getActualTypeArguments()[1].getTypeName(),
-              valueCoder, reader.getCurrentValue());
+          validateClass(genericClassType.getActualTypeArguments()[1].getTypeName(), valueCoder,
+              reader.getCurrentValue(), "value.class");
       if (!isCorrectKeyClassSet) {
         Class<?> actualClass = conf.getHadoopConfiguration().getClass("key.class", Object.class);
         throw new IllegalArgumentException(String.format(
@@ -557,54 +557,33 @@ public class HadoopInputFormatIO {
     }
 
     /**
-     * Returns true if key class set by the user is compatible with the key class of a pair returned
-     * by RecordReader. User provided key class is validated against the parameterized type's type
-     * arguments of InputFormat. If parameterized type has any type arguments such as T, K, V, etc
-     * then validation is done by encoding and decoding key object of first pair returned by
-     * RecordReader.
+     * Returns true if key/value class set by the user is compatible with the key/value class of a
+     * pair returned by RecordReader. User provided key/value class is validated against the
+     * parameterized type's type arguments of InputFormat. If parameterized type has any type
+     * arguments such as T, K, V, etc then validation is done by encoding and decoding key/value
+     * object of first pair returned by RecordReader.
      */
-    private <T> boolean validateKeyClass(String inputFormatGenericClassName, Coder<K> coder,
-        Object keyObject) {
+    private <T> boolean validateClass(String inputFormatGenericClassName, Coder coder,
+        Object object, String property) {
       try {
         Class<?> inputClass = Class.forName(inputFormatGenericClassName);
         /*
-         * Validates key class with InputFormat's parameterized type.
+         * Validates key/value class with InputFormat's parameterized type.
          */
-        return (conf.getHadoopConfiguration().getClass("key.class", Object.class))
-            .isAssignableFrom(inputClass);
+        if (property.equals("key.class")) {
+          return (conf.getHadoopConfiguration().getClass("key.class",
+              Object.class)).isAssignableFrom(inputClass);
+        }
+        return (conf.getHadoopConfiguration().getClass("value.class",
+            Object.class)).isAssignableFrom(inputClass);
       } catch (ClassNotFoundException e) {
         /*
          * Given inputFormatGenericClassName is a type parameter i.e. T, K, V, etc. In such cases
-         * class validation for user provided input key will not work correctly. Therefore the need
-         * to validate key class by encoding and decoding key object with the given coder.
+         * class validation for user provided input key/value will not work correctly. Therefore
+         * the need to validate key/value class by encoding and decoding key/value object with
+         * the given coder.
          */
-        return checkEncodingAndDecoding((Coder<T>) coder, (T) keyObject);
-      }
-    }
-
-    /**
-     * Returns true if value class set by the user is compatible with the value class of a pair
-     * returned by RecordReader. User provided value class is validated against the parameterized
-     * type's type arguments of InputFormat. If parameterized type has any type arguments such as T,
-     * K, V, etc then validation is done by encoding and decoding value object of first pair
-     * returned by RecordReader.
-     */
-    private <T> boolean validateValueClass(String inputFormatGenericClassName, Coder coder,
-        Object valueObject) {
-      try {
-        Class<?> inputClass = Class.forName(inputFormatGenericClassName);
-        /*
-         * Validates value class with InputFormat's parameterized type.
-         */
-        return (conf.getHadoopConfiguration().getClass("value.class", Object.class))
-            .isAssignableFrom(inputClass);
-      } catch (Exception e) {
-        /*
-         * Given inputFormatGenericClassName is a type parameter i.e. T, K, V, etc. In such cases
-         * class validation for user provided input value will not work correctly. Therefore the
-         * need to validate value class by encoding and decoding value object with the given coder.
-         */
-        return checkEncodingAndDecoding((Coder<T>) coder, (T) valueObject);
+        return checkEncodingAndDecoding((Coder<T>) coder, (T) object);
       }
     }
 
@@ -624,6 +603,8 @@ public class HadoopInputFormatIO {
      * Returns parameterized type of the InputFormat class.
      */
     private ParameterizedType determineGenericType() {
+      // It is considered that user provided inputFormatClass will always inherit from
+      // ParameterizedType.
       Class<?> inputFormatClass = inputFormatObj.getClass();
       Type genericSuperclass = null;
       for (;;) {
@@ -735,6 +716,7 @@ public class HadoopInputFormatIO {
             recordReader.initialize(split.getSplit(), taskAttemptContext);
             if (recordReader.nextKeyValue()) {
               recordsReturned++;
+              doneReading = false;
               return true;
             }
           } else {
@@ -782,7 +764,7 @@ public class HadoopInputFormatIO {
                   valueCoder);
         } catch (IOException | InterruptedException e) {
           LOG.error("Unable to read data: " + "{}", e);
-          return null;
+          throw new IllegalStateException("Unable to read data: " + "{}", e);
         }
         return KV.of(key, value);
       }
@@ -859,11 +841,12 @@ public class HadoopInputFormatIO {
       /**
        * Returns RecordReader's progress.
        * @throws IOException
+       * @throws InterruptedException
        */
-      private Double getProgress() throws IOException {
+      private Double getProgress() throws IOException, InterruptedException {
         try {
           return (double) recordReader.getProgress();
-        } catch (IOException | InterruptedException e) {
+        } catch (IOException e) {
           LOG.error(
               "Error in computing the fractions consumed as RecordReader.getProgress() throws an "
               + "exception : " + "{}", e);
