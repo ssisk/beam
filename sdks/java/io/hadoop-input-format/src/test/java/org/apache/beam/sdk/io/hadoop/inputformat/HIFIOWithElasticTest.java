@@ -194,7 +194,7 @@ public class HIFIOWithElasticTest implements Serializable {
     conf.setClass("key.class", Text.class, Object.class);
     conf.setClass("value.class", LinkedMapWritable.class, Object.class);
     return conf;
-  }
+ }
 
   private static Map<String, String> createElasticRow(String id, String name) {
     Map<String, String> data = new HashMap<String, String>();
