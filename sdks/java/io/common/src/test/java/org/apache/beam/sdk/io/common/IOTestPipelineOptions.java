@@ -27,6 +27,27 @@ import org.apache.beam.sdk.testing.TestPipelineOptions;
  * that were passed on the command line.
  */
 public interface IOTestPipelineOptions extends TestPipelineOptions {
+  /* Common */
+
+  /** Size of the expected data set. */
+  enum DataSetSize {
+    SMALL("SMALL"),
+    LARGE("LARGE");
+
+    private final String size;
+    private DataSetSize(String size) {
+      this.size = size;
+    }
+    public String getDataSetSize() {
+      return this.size;
+    }
+  }
+  @Description("Size of the expected data set - small or large are accepted values")
+  @Default.Enum("SMALL")
+  DataSetSize getDataSetSize();
+  void setDataSetSize(DataSetSize value);
+
+
   /* Postgres */
   @Description("Server name for postgres server (host name/ip address)")
   @Default.String("postgres-server-name")

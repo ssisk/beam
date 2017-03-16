@@ -17,11 +17,15 @@
  */
 package org.apache.beam.sdk.io.jdbc;
 
+import com.google.common.collect.ImmutableMap;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Map;
 import javax.sql.DataSource;
+
+import org.apache.beam.sdk.io.common.DataSetExpectedValues;
 import org.apache.beam.sdk.io.common.IOTestPipelineOptions;
 import org.apache.beam.sdk.options.PipelineOptionsFactory;
 import org.postgresql.ds.PGSimpleDataSource;
@@ -38,6 +42,18 @@ public class JdbcTestDataSet {
   private static final Logger LOG = LoggerFactory.getLogger(JdbcTestDataSet.class);
   public static final String[] SCIENTISTS = {"Einstein", "Darwin", "Copernicus", "Pasteur", "Curie",
       "Faraday", "McClintock", "Herschel", "Hopper", "Lovelace"};
+  public static final Map<IOTestPipelineOptions.DataSetSize, DataSetExpectedValues>
+      DATA_SET_EXPECTATION_MAP = ImmutableMap.of(
+      // TODO - still need to add support for the writeHash
+      IOTestPipelineOptions.DataSetSize.SMALL, DataSetExpectedValues.create(1000,
+          "TODOasdfsmallwritehash", "70f05cc07884a0a4ecb4b0c8bc44f8081cc8e828"),
+      // TODO - LARGE is intended to be a much larger number, but for now keeping it small.
+      IOTestPipelineOptions.DataSetSize.LARGE, DataSetExpectedValues.create(10000,
+          "TODOasdflargewritehash", "TODOasdflargereadhash")
+  );
+
+
+  private static DataSetExpectedValues expectedDataSetValues;
   /**
    * Use this to create the read tables before IT read tests.
    *
@@ -56,7 +72,8 @@ public class JdbcTestDataSet {
     IOTestPipelineOptions options =
         PipelineOptionsFactory.fromArgs(args).as(IOTestPipelineOptions.class);
 
-    createReadDataTable(getDataSource(options));
+    createReadDataTable(getDataSource(options),
+        JdbcTestDataSet.DATA_SET_EXPECTATION_MAP.get(options.getDataSetSize()));
   }
 
   public static PGSimpleDataSource getDataSource(IOTestPipelineOptions options)
@@ -78,22 +95,22 @@ public class JdbcTestDataSet {
 
   public static final String READ_TABLE_NAME = "BEAM_TEST_READ";
 
-  public static void createReadDataTable(DataSource dataSource) throws SQLException {
-    createDataTable(dataSource, READ_TABLE_NAME);
+  public static void createReadDataTable(
+      DataSource dataSource, DataSetExpectedValues dataSetExpectedValues) throws SQLException {
+    createDataTable(dataSource, READ_TABLE_NAME, dataSetExpectedValues);
   }
 
-  public static String createWriteDataTable(DataSource dataSource) throws SQLException {
+  public static String createWriteDataTable(
+      DataSource dataSource, DataSetExpectedValues dataSetExpectedValues) throws SQLException {
     String tableName = "BEAMTEST" + org.joda.time.Instant.now().getMillis();
-    createDataTable(dataSource, tableName);
+    createDataTable(dataSource, tableName, dataSetExpectedValues);
     return tableName;
   }
 
-  private static void createDataTable(DataSource dataSource, String tableName) throws SQLException {
+  private static void createDataTable(
+      DataSource dataSource, String tableName, DataSetExpectedValues dataSetExpectedValues)
+      throws SQLException {
     try (Connection connection = dataSource.getConnection()) {
-      // something like this will need to happen in tests on a newly created postgres server,
-      // but likely it will happen in perfkit, not here
-      // alternatively, we may have a pipelineoption indicating whether we want to
-      // re-use the database or create a new one
       try (Statement statement = connection.createStatement()) {
         statement.execute(
             String.format("create table %s (id INT, name VARCHAR(500))", tableName));
@@ -103,7 +120,7 @@ public class JdbcTestDataSet {
       try (PreparedStatement preparedStatement =
                connection.prepareStatement(
                    String.format("insert into %s values (?,?)", tableName))) {
-        for (int i = 0; i < 1000; i++) {
+        for (int i = 0; i < dataSetExpectedValues.rowCount(); i++) {
           int index = i % SCIENTISTS.length;
           preparedStatement.clearParameters();
           preparedStatement.setInt(1, i);

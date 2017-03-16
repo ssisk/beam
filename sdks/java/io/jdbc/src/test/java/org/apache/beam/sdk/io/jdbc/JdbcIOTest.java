@@ -34,6 +34,7 @@ import org.apache.beam.sdk.coders.BigEndianIntegerCoder;
 import org.apache.beam.sdk.coders.KvCoder;
 import org.apache.beam.sdk.coders.StringUtf8Coder;
 import org.apache.beam.sdk.coders.VarIntCoder;
+import org.apache.beam.sdk.io.common.DataSetExpectedValues;
 import org.apache.beam.sdk.testing.NeedsRunner;
 import org.apache.beam.sdk.testing.PAssert;
 import org.apache.beam.sdk.testing.TestPipeline;
@@ -109,7 +110,8 @@ public class JdbcIOTest implements Serializable {
     dataSource.setPortNumber(port);
 
 
-    JdbcTestDataSet.createReadDataTable(dataSource);
+    JdbcTestDataSet.createReadDataTable(dataSource,
+        DataSetExpectedValues.create(1000, "TODO hash", "TODO hash"));
   }
 
   @AfterClass
@@ -251,7 +253,8 @@ public class JdbcIOTest implements Serializable {
   @Category(NeedsRunner.class)
   public void testWrite() throws Exception {
 
-    String tableName = JdbcTestDataSet.createWriteDataTable(dataSource);
+    String tableName = JdbcTestDataSet.createWriteDataTable(dataSource,
+        DataSetExpectedValues.create(1000, "todo hash", "todo hash"));
     try {
       ArrayList<KV<Integer, String>> data = new ArrayList<>();
       for (int i = 0; i < 1000; i++) {

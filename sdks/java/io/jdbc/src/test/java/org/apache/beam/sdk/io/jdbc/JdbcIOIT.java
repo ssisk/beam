@@ -23,17 +23,21 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.List;
 
 import org.apache.beam.sdk.coders.BigEndianIntegerCoder;
 import org.apache.beam.sdk.coders.KvCoder;
 import org.apache.beam.sdk.coders.StringUtf8Coder;
+import org.apache.beam.sdk.io.common.DataSetExpectedValues;
+import org.apache.beam.sdk.io.common.HashingFn;
 import org.apache.beam.sdk.io.common.IOTestPipelineOptions;
 import org.apache.beam.sdk.options.PipelineOptionsFactory;
 import org.apache.beam.sdk.testing.PAssert;
 import org.apache.beam.sdk.testing.TestPipeline;
+import org.apache.beam.sdk.transforms.Combine;
 import org.apache.beam.sdk.transforms.Count;
 import org.apache.beam.sdk.transforms.Create;
+import org.apache.beam.sdk.transforms.DoFn;
+import org.apache.beam.sdk.transforms.ParDo;
 import org.apache.beam.sdk.values.KV;
 import org.apache.beam.sdk.values.PCollection;
 import org.junit.AfterClass;
@@ -71,6 +75,8 @@ public class JdbcIOIT {
   private static PGSimpleDataSource dataSource;
   private static String writeTableName;
 
+  private static DataSetExpectedValues dataSetExpectedValues;
+
   @BeforeClass
   public static void setup() throws SQLException {
     PipelineOptionsFactory.register(IOTestPipelineOptions.class);
@@ -80,6 +86,7 @@ public class JdbcIOIT {
     // We do dataSource set up in BeforeClass rather than Before since we don't need to create a new
     // dataSource for each test.
     dataSource = JdbcTestDataSet.getDataSource(options);
+    dataSetExpectedValues = JdbcTestDataSet.DATA_SET_EXPECTATION_MAP.get(options.getDataSetSize());
   }
 
   @AfterClass
@@ -97,6 +104,14 @@ public class JdbcIOIT {
       return kv;
     }
   }
+
+  private static class SelectNameFn extends DoFn<KV<String, Integer>, String> {
+    @ProcessElement
+    public void processElement(ProcessContext c) {
+      c.output(c.element().getKey());
+    }
+  }
+
 
   private static class PutKeyInColumnOnePutValueInColumnTwo
       implements JdbcIO.PreparedStatementSetter<KV<Integer, String>> {
@@ -119,25 +134,23 @@ public class JdbcIOIT {
    */
   @Test
   public void testRead() throws SQLException {
-    String writeTableName = JdbcTestDataSet.READ_TABLE_NAME;
+    String readTableName = JdbcTestDataSet.READ_TABLE_NAME;
 
-    PCollection<KV<String, Integer>> output = pipeline.apply(JdbcIO.<KV<String, Integer>>read()
+    PCollection<KV<String, Integer>> namesAndIds = pipeline.apply(JdbcIO.<KV<String, Integer>>read()
             .withDataSourceConfiguration(JdbcIO.DataSourceConfiguration.create(dataSource))
-            .withQuery("select name,id from " + writeTableName)
+            .withQuery("select name,id from " + readTableName)
             .withRowMapper(new CreateKVOfNameAndId())
             .withCoder(KvCoder.of(StringUtf8Coder.of(), BigEndianIntegerCoder.of())));
 
-    // TODO: validate actual contents of rows, not just count.
     PAssert.thatSingleton(
-        output.apply("Count All", Count.<KV<String, Integer>>globally()))
-        .isEqualTo(1000L);
+        namesAndIds.apply("Count All", Count.<KV<String, Integer>>globally()))
+        .isEqualTo((long) dataSetExpectedValues.rowCount());
 
-    List<KV<String, Long>> expectedCounts = new ArrayList<>();
-    for (String scientist : JdbcTestDataSet.SCIENTISTS) {
-      expectedCounts.add(KV.of(scientist, 100L));
-    }
-    PAssert.that(output.apply("Count Scientist", Count.<String, Integer>perKey()))
-        .containsInAnyOrder(expectedCounts);
+    PCollection<String> consolidatedHashcode = namesAndIds
+        .apply(ParDo.of(new SelectNameFn()))
+        .apply(Combine.globally(new HashingFn()).withoutDefaults());
+
+    PAssert.that(consolidatedHashcode).containsInAnyOrder(dataSetExpectedValues.readHash());
 
     pipeline.run().waitUntilFinish();
   }
@@ -146,19 +159,22 @@ public class JdbcIOIT {
    * Tests writes to a postgres database.
    *
    * <p>Write Tests must clean up their data - in this case, it uses a new table every test run so
-   * that it won't interfere with read tests/other write tests. It uses finally to attempt to
+   * that it won't interfere with read tests/other write tests. It uses AfterClass to attempt to
    * clean up data at the end of the test run.
    * @throws SQLException
    */
   @Test
   public void testWrite() throws SQLException {
-    writeTableName = JdbcTestDataSet.createWriteDataTable(dataSource);
+    writeTableName = JdbcTestDataSet.createWriteDataTable(dataSource, dataSetExpectedValues);
 
+    // TODO - for now, this cannot support creating large sets of values - we'll need to
+    // do data creation inside the pipeline so we can parallelize it
     ArrayList<KV<Integer, String>> data = new ArrayList<>();
-    for (int i = 0; i < 1000; i++) {
+    for (int i = 0; i < dataSetExpectedValues.rowCount(); i++) {
       KV<Integer, String> kv = KV.of(i, "Test");
       data.add(kv);
     }
+
     pipeline.apply(Create.of(data))
         .apply(JdbcIO.<KV<Integer, String>>write()
             .withDataSourceConfiguration(JdbcIO.DataSourceConfiguration.create(dataSource))
@@ -172,7 +188,8 @@ public class JdbcIOIT {
          ResultSet resultSet = statement.executeQuery("select count(*) from " + writeTableName)) {
       resultSet.next();
       int count = resultSet.getInt(1);
-      Assert.assertEquals(2000, count);
+      // 2x b/c one set of data is inserted by createDataTable
+      Assert.assertEquals(dataSetExpectedValues.rowCount() * 2, count);
     }
     // TODO: Actually verify contents of the rows.
   }
