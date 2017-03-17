@@ -16,5 +16,7 @@
 #    limitations under the License.
 #
 
-kubectl create -f postgres-pod-no-vol.yml
-kubectl create -f postgres-service-public.yml
+k8Path=./sdks/java/io/jdbc/src/test/resources/kubernetes
+
+kubectl create -f ${k8Path}/postgres-pod.yml
+kubectl create -f ${k8Path}/postgres-service.yml
