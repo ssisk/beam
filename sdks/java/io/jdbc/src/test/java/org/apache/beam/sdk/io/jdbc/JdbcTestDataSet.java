@@ -46,10 +46,10 @@ public class JdbcTestDataSet {
       DATA_SET_EXPECTATION_MAP = ImmutableMap.of(
       // TODO - still need to add support for the writeHash
       IOTestPipelineOptions.DataSetSize.SMALL, DataSetExpectedValues.create(1000,
-          "TODOasdfsmallwritehash", "70f05cc07884a0a4ecb4b0c8bc44f8081cc8e828"),
+          "TODOasdfsmallwritehash", "79735d27304f0b55e61fcdfd443e910a6a8d8ee4"),
       // TODO - LARGE is intended to be a much larger number, but for now keeping it small.
       IOTestPipelineOptions.DataSetSize.LARGE, DataSetExpectedValues.create(10000,
-          "TODOasdflargewritehash", "TODOasdflargereadhash")
+          "TODOasdflargewritehash", "b3c1424b059f93e9946d3cb2c8111101351f0f1e")
   );
 
 
@@ -72,7 +72,7 @@ public class JdbcTestDataSet {
     IOTestPipelineOptions options =
         PipelineOptionsFactory.fromArgs(args).as(IOTestPipelineOptions.class);
 
-    createReadDataTable(getDataSource(options),
+    createReadDataTableAndAddInitialData(getDataSource(options),
         JdbcTestDataSet.DATA_SET_EXPECTATION_MAP.get(options.getDataSetSize()));
   }
 
@@ -95,27 +95,28 @@ public class JdbcTestDataSet {
 
   public static final String READ_TABLE_NAME = "BEAM_TEST_READ";
 
-  public static void createReadDataTable(
+  public static void createReadDataTableAndAddInitialData(
       DataSource dataSource, DataSetExpectedValues dataSetExpectedValues) throws SQLException {
-    createDataTable(dataSource, READ_TABLE_NAME, dataSetExpectedValues);
+    createDataTable(dataSource, READ_TABLE_NAME);
+    addInitialData(dataSource, READ_TABLE_NAME, dataSetExpectedValues);
   }
 
-  public static String createWriteDataTable(
+  public static String createWriteDataTableAndAddInitialData(
       DataSource dataSource, DataSetExpectedValues dataSetExpectedValues) throws SQLException {
-    String tableName = "BEAMTEST" + org.joda.time.Instant.now().getMillis();
-    createDataTable(dataSource, tableName, dataSetExpectedValues);
+    String tableName = getWriteTableName();
+    createDataTable(dataSource, tableName);
+    addInitialData(dataSource, tableName, dataSetExpectedValues);
     return tableName;
   }
 
-  private static void createDataTable(
+  public static String getWriteTableName() {
+    return "BEAMTEST" + org.joda.time.Instant.now().getMillis();
+  }
+
+  private static void addInitialData(
       DataSource dataSource, String tableName, DataSetExpectedValues dataSetExpectedValues)
       throws SQLException {
     try (Connection connection = dataSource.getConnection()) {
-      try (Statement statement = connection.createStatement()) {
-        statement.execute(
-            String.format("create table %s (id INT, name VARCHAR(500))", tableName));
-      }
-
       connection.setAutoCommit(false);
       try (PreparedStatement preparedStatement =
                connection.prepareStatement(
@@ -129,6 +130,17 @@ public class JdbcTestDataSet {
         }
       }
       connection.commit();
+    }
+  }
+
+  public static void createDataTable(
+      DataSource dataSource, String tableName)
+      throws SQLException {
+    try (Connection connection = dataSource.getConnection()) {
+      try (Statement statement = connection.createStatement()) {
+        statement.execute(
+            String.format("create table %s (id INT, name VARCHAR(500))", tableName));
+      }
     }
 
     LOG.info("Created table {}", tableName);

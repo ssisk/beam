@@ -110,7 +110,7 @@ public class JdbcIOTest implements Serializable {
     dataSource.setPortNumber(port);
 
 
-    JdbcTestDataSet.createReadDataTable(dataSource,
+    JdbcTestDataSet.createReadDataTableAndAddInitialData(dataSource,
         DataSetExpectedValues.create(1000, "TODO hash", "TODO hash"));
   }
 
@@ -253,7 +253,7 @@ public class JdbcIOTest implements Serializable {
   @Category(NeedsRunner.class)
   public void testWrite() throws Exception {
 
-    String tableName = JdbcTestDataSet.createWriteDataTable(dataSource,
+    String tableName = JdbcTestDataSet.createWriteDataTableAndAddInitialData(dataSource,
         DataSetExpectedValues.create(1000, "todo hash", "todo hash"));
     try {
       ArrayList<KV<Integer, String>> data = new ArrayList<>();
