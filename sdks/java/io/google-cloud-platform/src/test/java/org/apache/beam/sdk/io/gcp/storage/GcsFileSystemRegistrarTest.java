@@ -22,6 +22,8 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import com.google.common.collect.Lists;
+
+import java.io.IOException;
 import java.util.ServiceLoader;
 
 import org.apache.beam.sdk.io.FileSystemRegistrar;
@@ -37,7 +39,7 @@ import org.junit.runners.JUnit4;
 public class GcsFileSystemRegistrarTest {
 
   @Test
-  public void testServiceLoader() {
+  public void testServiceLoader() throws IOException {
     for (FileSystemRegistrar registrar
         : Lists.newArrayList(ServiceLoader.load(FileSystemRegistrar.class).iterator())) {
       if (registrar instanceof GcsFileSystemRegistrar) {
