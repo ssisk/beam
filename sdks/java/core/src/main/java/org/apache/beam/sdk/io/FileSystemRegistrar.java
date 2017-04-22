@@ -18,6 +18,8 @@
 package org.apache.beam.sdk.io;
 
 import com.google.auto.service.AutoService;
+
+import java.io.IOException;
 import java.util.ServiceLoader;
 import javax.annotation.Nullable;
 import org.apache.beam.sdk.options.PipelineOptions;
@@ -35,7 +37,7 @@ public interface FileSystemRegistrar {
   /**
    * Create a {@link FileSystem} from the given {@link PipelineOptions}.
    */
-  FileSystem fromOptions(@Nullable PipelineOptions options);
+  FileSystem fromOptions(@Nullable PipelineOptions options) throws IOException;
 
   /**
    * Get the URI scheme which defines the namespace of the {@link FileSystemRegistrar}.

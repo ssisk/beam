@@ -395,7 +395,7 @@ public class FileSystems {
    * Internal method to get {@link FileSystem} for {@code spec}.
    */
   @VisibleForTesting
-  static FileSystem getFileSystemInternal(String scheme) {
+  static FileSystem getFileSystemInternal(String scheme) throws IOException {
     return getRegistrarInternal(scheme.toLowerCase()).fromOptions(defaultConfig);
   }
 
