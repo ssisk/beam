@@ -30,6 +30,11 @@
   <name>Apache Beam :: SDKs :: Java :: IO :: HDFS</name>
   <description>Library to read and write Hadoop/HDFS file formats from Beam.</description>
 
+  <!-- TODO - why is this not a shared variable yet? -->
+  <properties>
+    <hadoop.common.version>2.7.0</hadoop.common.version>
+  </properties>
+
   <build>
     <plugins>
       <plugin>
@@ -136,6 +141,28 @@
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
       <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.beam</groupId>
+      <artifactId>beam-sdks-java-io-common</artifactId>
+      <scope>test</scope>
+      <classifier>tests</classifier>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.hadoop</groupId>
+      <artifactId>hadoop-minicluster</artifactId>
+      <version>${hadoop.common.version}</version>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.hadoop</groupId>
+      <artifactId>hadoop-hdfs</artifactId>
+      <version>${hadoop.common.version}</version>
+      <scope>test</scope>
+      <classifier>tests</classifier>
     </dependency>
   </dependencies>
 </project>
