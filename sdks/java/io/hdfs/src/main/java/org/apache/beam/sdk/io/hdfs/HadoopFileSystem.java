@@ -22,17 +22,26 @@ import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
 import java.util.Collection;
 import java.util.List;
-import org.apache.beam.sdk.io.FileSystem;
 import org.apache.beam.sdk.io.fs.CreateOptions;
 import org.apache.beam.sdk.io.fs.MatchResult;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
 
 /**
  * Adapts {@link org.apache.hadoop.fs.FileSystem} connectors to be used as
- * Apache Beam {@link FileSystem FileSystems}.
+ * Apache Beam {@link org.apache.beam.sdk.io.FileSystem FileSystems}.
  */
-class HadoopFileSystem extends FileSystem<HadoopResourceId> {
+class HadoopFileSystem extends org.apache.beam.sdk.io.FileSystem<HadoopResourceId> {
 
-  HadoopFileSystem() {}
+  public static HadoopFileSystem fromConfiguration(Configuration conf) throws IOException {
+    return new HadoopFileSystem(FileSystem.get(conf));
+  }
+
+  private FileSystem fileSystem;
+
+  protected HadoopFileSystem(FileSystem fileSystem) {
+    this.fileSystem = fileSystem;
+  }
 
   @Override
   protected List<MatchResult> match(List<String> specs) throws IOException {
@@ -66,6 +75,11 @@ class HadoopFileSystem extends FileSystem<HadoopResourceId> {
 
   @Override
   protected void delete(Collection<HadoopResourceId> resourceIds) throws IOException {
-    throw new UnsupportedOperationException();
+    // TODO - Do these calls end up serialized or parallel?
+    // TODO - what to do if there is an exception while handling one of the resourceIds?
+    //        fail all or just one? default: just allow the failure to be returned, don't be fancy.
+    for (HadoopResourceId resourceId : resourceIds) {
+      fileSystem.delete(resourceId.getPath(), true);
+    }
   }
 }
