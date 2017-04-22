@@ -23,6 +23,9 @@ import org.apache.beam.sdk.io.FileSystem;
 import org.apache.beam.sdk.io.FileSystemRegistrar;
 import org.apache.beam.sdk.io.FileSystems;
 import org.apache.beam.sdk.options.PipelineOptions;
+import org.apache.hadoop.conf.Configuration;
+
+import java.io.IOException;
 
 /**
  * {@link AutoService} registrar for the {@link HadoopFileSystem}.
@@ -31,12 +34,12 @@ import org.apache.beam.sdk.options.PipelineOptions;
 public class HadoopFileSystemRegistrar implements FileSystemRegistrar {
 
   @Override
-  public FileSystem fromOptions(@Nonnull PipelineOptions options) {
-    return new HadoopFileSystem();
+  public FileSystem fromOptions(@Nonnull PipelineOptions options) throws IOException {
+    return HadoopFileSystem.fromConfiguration(new Configuration());
   }
 
   @Override
   public String getScheme() {
-    return FileSystems.DEFAULT_SCHEME;
+    return "hdfs";
   }
 }
