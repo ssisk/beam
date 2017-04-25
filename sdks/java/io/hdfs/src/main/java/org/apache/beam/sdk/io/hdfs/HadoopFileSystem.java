@@ -30,6 +30,9 @@ import org.apache.hadoop.fs.FileSystem;
 /**
  * Adapts {@link org.apache.hadoop.fs.FileSystem} connectors to be used as
  * Apache Beam {@link org.apache.beam.sdk.io.FileSystem FileSystems}.
+ *
+ * To use HadoopFileSystem, you must have passed a Hadoop Configuration through
+ * TODO - add more instructions
  */
 class HadoopFileSystem extends org.apache.beam.sdk.io.FileSystem<HadoopResourceId> {
 

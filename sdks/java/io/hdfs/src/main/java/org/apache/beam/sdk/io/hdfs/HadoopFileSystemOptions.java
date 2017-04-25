@@ -17,33 +17,21 @@
  */
 package org.apache.beam.sdk.io.hdfs;
 
-import com.google.auto.service.AutoService;
-import javax.annotation.Nonnull;
-import org.apache.beam.sdk.io.FileSystem;
-import org.apache.beam.sdk.io.FileSystemRegistrar;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.apache.beam.sdk.io.hadoop.SerializableConfiguration;
+import org.apache.beam.sdk.options.Default;
+import org.apache.beam.sdk.options.Description;
 import org.apache.beam.sdk.options.PipelineOptions;
 import org.apache.hadoop.conf.Configuration;
 
-import java.io.IOException;
+import java.util.Map;
 
 /**
- * {@link AutoService} registrar for the {@link HadoopFileSystem}.
+ * Options used to configure HadoopFileSystem.
  */
-@AutoService(FileSystemRegistrar.class)
-public class HadoopFileSystemRegistrar implements FileSystemRegistrar {
-
-  @Override
-  public FileSystem fromOptions(@Nonnull PipelineOptions options) throws IOException {
-    return HadoopFileSystem.fromConfiguration(constructConfiguration(options));
-  }
-
-  private Configuration constructConfiguration(@Nonnull PipelineOptions options) {
-    Configuration configuration = new Configuration();
-    return configuration;
-  }
-
-  @Override
-  public String getScheme() {
-    return "hdfs";
-  }
+public interface HadoopFileSystemOptions extends PipelineOptions {
+  @Description("The configuration used for reading from hdfs, specified as JSON "
+      + "{\"name\":\"value\",...}. Currently only simple string values are supported.")
+  Map<String, String> getHdfsConfiguration();
+  void setHdfsConfiguration(Map<String, String> conf);
 }
