@@ -17,6 +17,7 @@
  */
 package org.apache.beam.sdk.io.hdfs;
 
+import avro.shaded.com.google.common.annotations.VisibleForTesting;
 import com.google.auto.service.AutoService;
 import javax.annotation.Nonnull;
 import org.apache.beam.sdk.io.FileSystem;
@@ -25,6 +26,7 @@ import org.apache.beam.sdk.options.PipelineOptions;
 import org.apache.hadoop.conf.Configuration;
 
 import java.io.IOException;
+import java.util.Map;
 
 /**
  * {@link AutoService} registrar for the {@link HadoopFileSystem}.
@@ -37,8 +39,14 @@ public class HadoopFileSystemRegistrar implements FileSystemRegistrar {
     return HadoopFileSystem.fromConfiguration(constructConfiguration(options));
   }
 
+  @VisibleForTesting
   private Configuration constructConfiguration(@Nonnull PipelineOptions options) {
     Configuration configuration = new Configuration();
+    HadoopFileSystemOptions hfsOptions = options.as(HadoopFileSystemOptions.class);
+    Map<String, String> hfsBag = hfsOptions.getHfsConfiguration();
+    for(Map.Entry<String,String> entry : hfsBag.entrySet()) {
+      configuration.set(entry.getKey(), entry.getValue());
+    }
     return configuration;
   }
 

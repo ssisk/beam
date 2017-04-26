@@ -51,4 +51,17 @@ public class HadoopFileSystemRegistrarTest {
     }
     fail("Expected to find " + HadoopFileSystemRegistrar.class);
   }
+
+  @Test
+  public void testNoConfiguration() {
+
+  }
+
+  @Test
+  public void testSimpleConfiguration() {
+    // read string
+    // read int
+    // read class
+    // same key specified twice
+  }
 }

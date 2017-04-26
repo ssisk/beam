@@ -30,8 +30,8 @@ import java.util.Map;
  * Options used to configure HadoopFileSystem.
  */
 public interface HadoopFileSystemOptions extends PipelineOptions {
-  @Description("The configuration used for reading from hdfs, specified as JSON "
+  @Description("The configuration used for reading from Hadoop FileSystem, specified as JSON "
       + "{\"name\":\"value\",...}. Currently only simple string values are supported.")
-  Map<String, String> getHdfsConfiguration();
-  void setHdfsConfiguration(Map<String, String> conf);
+  Map<String, String> getHfsConfiguration();
+  void setHfsConfiguration(Map<String, String> conf);
 }
